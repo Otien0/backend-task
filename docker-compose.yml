@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  python_service:
+    build: ./llm-python-service
+    container_name: python_service
+    ports:
+      - "5000:5000"
+    networks:
+      - app-network
+
+  mongo:
+    image: mongo
+    container_name: mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - app-network
+
+  api_server:
+    build: ./llm-node-api
+    container_name: api_server
+    ports:
+      - "3000:3000"
+    depends_on:
+      - python_service
+      - mongo
+    networks:
+      - app-network
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/conversations
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  mongo-data:
